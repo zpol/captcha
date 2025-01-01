@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration Form with CAPTCHA</title>
+</head>
+<body>
+    <h2>Registration Form</h2>
+    <form id="registrationForm" action="/register" method="POST">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required><br><br>
+
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required><br><br>
+
+        <label for="captcha">CAPTCHA:</label><br>
+        <img id="captchaImage" src="" alt="CAPTCHA Image"><br>
+        <input type="text" id="captchaInput" name="captcha_input" required><br><br>
+
+        <input type="hidden" id="captchaId" name="captcha_id">
+
+        <button type="submit">Register</button>
+    </form>
+
+    <script>
+        // Fetch CAPTCHA on page load
+        fetch('http://localhost:5000/generate_captcha')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('captchaImage').src = 'http://localhost:5000' + data.captcha_image_url;
+                document.getElementById('captchaId').value = data.captcha_id;
+            });
+
+        // Handle form submission
+        document.getElementById('registrationForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const formData = new FormData(this);
+            const captchaId = parseInt(formData.get('captcha_id'), 10); // Convert to integer
+            const userInput = formData.get('captcha_input');
+
+            console.log('captcha_id:', captchaId);
+            console.log('user_input:', userInput);
+
+            const payload = {
+                captcha_id: captchaId,
+                user_input: userInput
+            };
+
+            console.log('Sending payload:', payload);
+
+            fetch('http://localhost:5000/verify_captcha', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Response data:', data);
+                if (data.success) {
+                    alert('CAPTCHA verified successfully!');
+                    // Proceed with form submission
+                    this.submit();
+                } else {
+                    alert('Incorrect CAPTCHA. Please try again.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    </script>
+</body>
+</html>

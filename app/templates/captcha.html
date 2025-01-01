@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>CAPTCHA Verification</title>
+    <script>
+        async function fetchCaptcha() {
+            const response = await fetch('/generate_captcha');
+            const data = await response.json();
+            document.getElementById('captcha_image').src = data.captcha_image_url;
+            document.getElementById('captcha_id').value = data.captcha_id;
+        }
+
+        async function verifyCaptcha() {
+            const captcha_id = document.getElementById('captcha_id').value;
+            const user_input = document.getElementById('user_input').value;
+
+            const response = await fetch('/verify_captcha', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ captcha_id, user_input })
+            });
+
+            if (response.ok) {
+                alert("CAPTCHA verified successfully!");
+            } else {
+                alert("CAPTCHA verification failed!");
+            }
+        }
+    </script>
+</head>
+<body onload="fetchCaptcha()">
+    <h1>CAPTCHA Verification</h1>
+    <img id="captcha_image" src="" alt="CAPTCHA">
+    <input type="hidden" id="captcha_id">
+    <input type="text" id="user_input" placeholder="Enter CAPTCHA">
+    <button onclick="verifyCaptcha()">Submit</button>
+</body>
+</html>
+
