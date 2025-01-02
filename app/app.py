@@ -6,10 +6,9 @@ import os
 app = Flask(__name__, static_folder="static")
 CORS(app)  # Enable CORS
 
-# Crear el directorio estático si no existe
+
 os.makedirs(app.static_folder, exist_ok=True)
 
-# Dictionary to store CAPTCHA texts
 captcha_store = {}
 
 @app.route('/generate_captcha', methods=['GET'])
@@ -23,7 +22,6 @@ def generate_captcha_route():
     captcha_path = os.path.join(app.static_folder, f"captcha_{captcha_id}.png")
     captcha_image.save(captcha_path)
 
-    # Store the CAPTCHA text with the captcha_id
     captcha_store[captcha_id] = captcha_text
 
     return jsonify({
@@ -41,7 +39,6 @@ def verify_captcha_route():
     captcha_id = data.get("captcha_id")
     user_input = data.get("user_input")
 
-    # Retrieve the correct CAPTCHA text using the captcha_id
     correct_text = captcha_store.get(captcha_id)
 
     if correct_text and correct_text == user_input:
